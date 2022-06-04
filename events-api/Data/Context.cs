@@ -31,7 +31,7 @@ namespace events_api.Data
 
         public DbSet<Event> Event { get; set; }
 
-       
+        public DbSet<Photo> Photo { get; set; }
 
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
@@ -71,19 +71,20 @@ namespace events_api.Data
                 entity.HasOne(d => d.Speciality)
                     .WithMany(p => p.Qualifications)
                     .HasForeignKey(d => d.SpecialityId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
             });
 
             modelBuilder.Entity<Student>(entity =>
             {
+               entity.HasIndex(u => u.Email).IsUnique();//
+
                 entity.HasKey(e => e.Id);
-
-
+                
                 entity.HasOne(d => d.Group)
                     .WithMany(p => p.Students)
                     .HasForeignKey(d => d.GroupId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict);///?
 
             });
 
@@ -99,7 +100,7 @@ namespace events_api.Data
                 entity.HasOne(d => d.Qualification)
                     .WithMany(p => p.Groups)
                     .HasForeignKey(d => d.QualificationId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);///
 
             });
             modelBuilder.Entity<Position>(entity =>
@@ -118,14 +119,13 @@ namespace events_api.Data
                 entity.HasKey(e => e.Id);
 
 
-                entity.HasIndex(e => e.Name, "UQ_Name")
-                    .IsUnique();
+                
 
 
                 entity.HasOne(d => d.Position)
                     .WithMany(p => p.Employees)
                     .HasForeignKey(d => d.PositionId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);/////
 
             });
             modelBuilder.Entity<Event>(entity =>
@@ -144,6 +144,8 @@ namespace events_api.Data
                     .HasMany(e => e.Employees)
                     .WithMany(s => s.Events);
 
+              
+
                 //.UsingEntity(j => j.ToTable("PostTags"));
 
             });
@@ -154,7 +156,7 @@ namespace events_api.Data
                 entity.HasOne(d => d.Event)
                     .WithMany(p => p.Places)
                     .HasForeignKey(d => d.EventId)
-                    .OnDelete(DeleteBehavior.ClientCascade);
+                    .OnDelete(DeleteBehavior.ClientCascade); ///?
 
                 entity.HasOne(d => d.Student)
                     .WithMany(p => p.Places)
@@ -163,7 +165,32 @@ namespace events_api.Data
 
             });
 
-          
+            modelBuilder.Entity<Photo>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(d => d.Event)
+                    .WithMany(p => p.Photos)
+                    .HasForeignKey(d => d.EventId)
+                    .OnDelete(DeleteBehavior.ClientCascade); ///?
+
+
+            });
+
+            modelBuilder.Entity<Document>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(d => d.Event)
+                    .WithMany(p => p.Documents)
+                    .HasForeignKey(d => d.EventId)
+                    .OnDelete(DeleteBehavior.ClientCascade); 
+
+
+            });
+
+
+
         }
 
        

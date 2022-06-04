@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using events_api.Data;
@@ -11,14 +12,15 @@ using events_api.Data;
 namespace events_api.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20220522143934_studentDate")]
+    partial class studentDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .UseCollation("Cyrillic_General_CI_AS")
-                .HasAnnotation("ProductVersion", "6.0.5")
+                .HasAnnotation("ProductVersion", "6.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -53,30 +55,6 @@ namespace events_api.Migrations
                     b.ToTable("EventGroup");
                 });
 
-            modelBuilder.Entity("events_api.Data.Document", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("Document");
-                });
-
             modelBuilder.Entity("events_api.Data.Employee", b =>
                 {
                     b.Property<Guid>("Id")
@@ -92,6 +70,7 @@ namespace events_api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("MiddleName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Phone")
@@ -124,8 +103,14 @@ namespace events_api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("DocsLink")
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhotosLink")
                         .HasColumnType("text");
 
                     b.Property<string>("Place")
@@ -167,30 +152,6 @@ namespace events_api.Migrations
                     b.ToTable("Groups");
                 });
 
-            modelBuilder.Entity("events_api.Data.Photo", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("Photo");
-                });
-
             modelBuilder.Entity("events_api.Data.Place", b =>
                 {
                     b.Property<Guid>("Id")
@@ -201,6 +162,7 @@ namespace events_api.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Number")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("StudentId")
@@ -305,15 +267,14 @@ namespace events_api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Nationality")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
 
                     b.HasIndex("GroupId");
 
@@ -365,23 +326,12 @@ namespace events_api.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("events_api.Data.Document", b =>
-                {
-                    b.HasOne("events_api.Data.Event", "Event")
-                        .WithMany("Documents")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-                });
-
             modelBuilder.Entity("events_api.Data.Employee", b =>
                 {
                     b.HasOne("events_api.Data.Position", "Position")
                         .WithMany("Employees")
                         .HasForeignKey("PositionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Position");
@@ -392,21 +342,10 @@ namespace events_api.Migrations
                     b.HasOne("events_api.Data.Qualification", "Qualification")
                         .WithMany("Groups")
                         .HasForeignKey("QualificationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Qualification");
-                });
-
-            modelBuilder.Entity("events_api.Data.Photo", b =>
-                {
-                    b.HasOne("events_api.Data.Event", "Event")
-                        .WithMany("Photos")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
                 });
 
             modelBuilder.Entity("events_api.Data.Place", b =>
@@ -433,7 +372,7 @@ namespace events_api.Migrations
                     b.HasOne("events_api.Data.Speciality", "Speciality")
                         .WithMany("Qualifications")
                         .HasForeignKey("SpecialityId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Speciality");
@@ -467,10 +406,6 @@ namespace events_api.Migrations
 
             modelBuilder.Entity("events_api.Data.Event", b =>
                 {
-                    b.Navigation("Documents");
-
-                    b.Navigation("Photos");
-
                     b.Navigation("Places");
                 });
 

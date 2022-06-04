@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using events_api.Data;
@@ -11,9 +12,10 @@ using events_api.Data;
 namespace events_api.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20220601175136_AddPhotos")]
+    partial class AddPhotos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,30 +55,6 @@ namespace events_api.Migrations
                     b.ToTable("EventGroup");
                 });
 
-            modelBuilder.Entity("events_api.Data.Document", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("Document");
-                });
-
             modelBuilder.Entity("events_api.Data.Employee", b =>
                 {
                     b.Property<Guid>("Id")
@@ -92,6 +70,7 @@ namespace events_api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("MiddleName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Phone")
@@ -180,6 +159,9 @@ namespace events_api.Migrations
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("EventId1")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -187,6 +169,8 @@ namespace events_api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("EventId");
+
+                    b.HasIndex("EventId1");
 
                     b.ToTable("Photo");
                 });
@@ -201,6 +185,7 @@ namespace events_api.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Number")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("StudentId")
@@ -365,17 +350,6 @@ namespace events_api.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("events_api.Data.Document", b =>
-                {
-                    b.HasOne("events_api.Data.Event", "Event")
-                        .WithMany("Documents")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-                });
-
             modelBuilder.Entity("events_api.Data.Employee", b =>
                 {
                     b.HasOne("events_api.Data.Position", "Position")
@@ -405,6 +379,10 @@ namespace events_api.Migrations
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
+
+                    b.HasOne("events_api.Data.Event", null)
+                        .WithMany("Files")
+                        .HasForeignKey("EventId1");
 
                     b.Navigation("Event");
                 });
@@ -467,7 +445,7 @@ namespace events_api.Migrations
 
             modelBuilder.Entity("events_api.Data.Event", b =>
                 {
-                    b.Navigation("Documents");
+                    b.Navigation("Files");
 
                     b.Navigation("Photos");
 

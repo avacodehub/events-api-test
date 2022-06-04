@@ -19,7 +19,23 @@ namespace events_api.Controllers
         public SpecialitiesController(Context context)
         {
             _context = context;
+            _context.Qualifications.Load();
+            _context.Groups.Load();
         }
+
+        [HttpPost("search")]
+        public async Task<ActionResult<IEnumerable<SpecialityDTO>>> SearchSpecialitys(SpecialityFilterDTO specialityFilterDTO)
+        {
+            IQueryable<Speciality> q = _context.Specialities;
+
+            if (!String.IsNullOrEmpty(specialityFilterDTO.SearchTerm))
+            {
+                q = q.Where(x => x.Name.Contains(specialityFilterDTO.SearchTerm));
+            }
+            return await q.Select(speciality => new SpecialityDTO(speciality)).ToListAsync();
+
+        }
+
 
         // GET: api/Specialities
         [HttpGet]
@@ -45,14 +61,18 @@ namespace events_api.Controllers
         // PUT: api/Specialities/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSpeciality(Guid id, Speciality speciality)
+        public async Task<IActionResult> PutSpeciality(string id, SpecialityPostDTO speciality)
         {
-            if (id != speciality.Id)
+            Speciality _speciality = _context.Specialities.Find(Guid.ParseExact(id, "D"));
+
+            if (_speciality == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(speciality).State = EntityState.Modified;
+            _speciality.Name = speciality.Name;
+
+            _context.Entry(_speciality).State = EntityState.Modified;
 
             try
             {
@@ -60,14 +80,9 @@ namespace events_api.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!SpecialityExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
+               
                     throw;
-                }
+                
             }
 
             return NoContent();
@@ -76,25 +91,34 @@ namespace events_api.Controllers
         // POST: api/Specialities
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Speciality>> PostSpeciality(Speciality speciality)
+        public async Task<ActionResult<string>> PostSpeciality(SpecialityPostDTO specialityDTO)
         {
+            //var qual_id = Guid.ParseExact(specialityDTO.QualificationId, "D");
+            //Qualification qual = _context.Qualifications.Find(qual_id);
+
+            
+            var speciality = new Speciality
+            {
+                Name = specialityDTO.Name,
+                //QualificationId = qual.Id,
+               
+            };
+
             _context.Specialities.Add(speciality);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetSpeciality", new { id = speciality.Id }, speciality);
+            return speciality.Id.ToString(); 
         }
 
         // DELETE: api/Specialities/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSpeciality(Guid id)
+        [HttpPost("delete")]
+        public async Task<IActionResult> PostSpecialityDelete(List<string> ids)
         {
-            var speciality = await _context.Specialities.FindAsync(id);
-            if (speciality == null)
-            {
-                return NotFound();
-            }
+            var _guids = ids.Select(z => Guid.ParseExact(z, "D"));
 
-            _context.Specialities.Remove(speciality);
+            var _speciality = _context.Specialities.Where(x => _guids.Any(z => z == x.Id)).ToList();
+           
+            _context.Specialities.RemoveRange(_speciality);
             await _context.SaveChangesAsync();
 
             return NoContent();

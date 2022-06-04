@@ -17,5 +17,20 @@ namespace events_api.Data
         public string Name { get; set; }
         public List<Employee> Employees { get; set; }
     }
-    
+    public class PositionDTO
+    {
+        public PositionDTO() { }
+        public PositionDTO(Position position)
+        {
+            this.Id = position.Id;
+            this.Name = position.Name;
+           
+        }
+
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+      
+
+
+    }
 }

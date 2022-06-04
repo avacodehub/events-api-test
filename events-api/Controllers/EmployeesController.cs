@@ -21,6 +21,26 @@ namespace events_api.Controllers
             _context = context;
         }
 
+        // POST: api/Employee/search
+        [HttpPost("search")]
+        public async Task<ActionResult<IEnumerable<EmployeeDTO>>> SearchEmployees(EmployeeFilterDTO employeeFilterDTO)
+        { 
+            
+            IQueryable<Employee> q = _context.Employees.Include(x => x.Position);
+
+            if (employeeFilterDTO.PositionIds !=null && employeeFilterDTO.PositionIds.Any())
+            {
+                var _guids = employeeFilterDTO.PositionIds.Select(z => Guid.ParseExact(z, "D")).ToList();
+                q = q.Where(x => _guids.Any(z => z == x.PositionId));
+            }
+
+            if (!String.IsNullOrEmpty(employeeFilterDTO.SearchTerm))
+            {
+                q = q.Where(x => x.LastName.Contains(employeeFilterDTO.SearchTerm));
+            }
+            return await q.Select(employee => new EmployeeDTO(employee)).ToListAsync();
+        }
+
         // GET: api/Employees
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
@@ -45,14 +65,25 @@ namespace events_api.Controllers
         // PUT: api/Employees/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmployee(Guid id, Employee employee)
+        public async Task<IActionResult> PutEmployee(string id, EmployeePostDTO employee)
         {
-            if (id != employee.Id)
+            Employee _employee = _context.Employees.Find(Guid.ParseExact(id, "D"));
+
+            if (_employee == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(employee).State = EntityState.Modified;
+            _employee.LastName = employee.LastName;
+            _employee.FirstName = employee.FirstName;
+            _employee.MiddleName = employee.MiddleName;
+            _employee.Phone = employee.Phone;
+            _employee.PositionId = employee.PositionId;
+            _employee.Position = _context.Positions.FirstOrDefault(x => x.Id == employee.PositionId);
+
+         
+
+            _context.Entry(_employee).State = EntityState.Modified;
 
             try
             {
@@ -60,14 +91,8 @@ namespace events_api.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!EmployeeExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+
+                throw;
             }
 
             return NoContent();
@@ -76,29 +101,55 @@ namespace events_api.Controllers
         // POST: api/Employees
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Employee>> PostEmployee(Employee employee)
+        public async Task<ActionResult<string>> PostEmployee(EmployeePostDTO employeeDTO)
         {
+           
+            var employee = new Employee
+            {
+                LastName = employeeDTO.LastName,
+                FirstName = employeeDTO.FirstName,
+                MiddleName = employeeDTO.MiddleName,
+                Phone = employeeDTO.Phone,
+                PositionId = employeeDTO.PositionId ,
+               Position = _context.Positions.FirstOrDefault(x => x.Id == employeeDTO.PositionId)
+               
+
+            };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetEmployee", new { id = employee.Id }, employee);
+            return employee.Id.ToString();
+           
         }
 
         // DELETE: api/Employees/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEmployee(Guid id)
+        [HttpPost("delete")]
+        public async Task<IActionResult> PostEmployeeDelete(List<string> ids)
         {
-            var employee = await _context.Employees.FindAsync(id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
+            var _guids = ids.Select(z => Guid.ParseExact(z, "D"));
+            var _employees = _context.Employees.Where(x => _guids.Any(z => z == x.Id)).ToList();
 
-            _context.Employees.Remove(employee);
+            _context.Employees.RemoveRange(_employees);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
+
+        // DELETE: api/Employees/5
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteEmployee(Guid id)
+        //{
+        //    var employee = await _context.Employees.FindAsync(id);
+        //    if (employee == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    _context.Employees.Remove(employee);
+        //    await _context.SaveChangesAsync();
+
+        //    return NoContent();
+        //}
 
         private bool EmployeeExists(Guid id)
         {

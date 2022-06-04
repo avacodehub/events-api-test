@@ -12,7 +12,7 @@ using events_api.Data;
 namespace events_api.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20220227101922_Initial")]
+    [Migration("20220404172203_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -73,10 +73,6 @@ namespace events_api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("text");
@@ -87,9 +83,6 @@ namespace events_api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PositionId");
-
-                    b.HasIndex(new[] { "Name" }, "UQ_Name")
-                        .IsUnique();
 
                     b.ToTable("Employees");
                 });
@@ -110,8 +103,14 @@ namespace events_api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("DocsLink")
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhotosLink")
                         .HasColumnType("text");
 
                     b.Property<string>("Place")
@@ -148,8 +147,7 @@ namespace events_api.Migrations
                     b.HasIndex("QualificationId");
 
                     b.HasIndex(new[] { "Name" }, "UQ_Name")
-                        .IsUnique()
-                        .HasDatabaseName("UQ_Name1");
+                        .IsUnique();
 
                     b.ToTable("Groups");
                 });
@@ -193,7 +191,7 @@ namespace events_api.Migrations
 
                     b.HasIndex(new[] { "Name" }, "UQ_Name")
                         .IsUnique()
-                        .HasDatabaseName("UQ_Name2");
+                        .HasDatabaseName("UQ_Name1");
 
                     b.ToTable("Positions");
                 });
@@ -217,7 +215,7 @@ namespace events_api.Migrations
 
                     b.HasIndex(new[] { "Name" }, "UQ_Name")
                         .IsUnique()
-                        .HasDatabaseName("UQ_Name3");
+                        .HasDatabaseName("UQ_Name2");
 
                     b.ToTable("Qualifications");
                 });
@@ -236,7 +234,7 @@ namespace events_api.Migrations
 
                     b.HasIndex(new[] { "Name" }, "UQ_Name")
                         .IsUnique()
-                        .HasDatabaseName("UQ_Name4");
+                        .HasDatabaseName("UQ_Name3");
 
                     b.ToTable("Specialities");
                 });
@@ -258,6 +256,9 @@ namespace events_api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -275,6 +276,8 @@ namespace events_api.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
 
                     b.ToTable("Students");
                 });
@@ -376,6 +379,17 @@ namespace events_api.Migrations
                     b.Navigation("Speciality");
                 });
 
+            modelBuilder.Entity("events_api.Data.Student", b =>
+                {
+                    b.HasOne("events_api.Data.Group", "Group")
+                        .WithMany("Students")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+                });
+
             modelBuilder.Entity("EventStudent", b =>
                 {
                     b.HasOne("events_api.Data.Event", null)
@@ -394,6 +408,11 @@ namespace events_api.Migrations
             modelBuilder.Entity("events_api.Data.Event", b =>
                 {
                     b.Navigation("Places");
+                });
+
+            modelBuilder.Entity("events_api.Data.Group", b =>
+                {
+                    b.Navigation("Students");
                 });
 
             modelBuilder.Entity("events_api.Data.Position", b =>

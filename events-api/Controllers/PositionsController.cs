@@ -21,6 +21,13 @@ namespace events_api.Controllers
             _context = context;
         }
 
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<PositionDTO>>> SearchQualifications()
+        {
+            _context.Positions.Load();
+            return await _context.Positions.Select(positions => new PositionDTO(positions)).ToListAsync();
+        }
+
         // GET: api/Positions
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Position>>> GetPositions()
@@ -76,12 +83,18 @@ namespace events_api.Controllers
         // POST: api/Positions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Position>> PostPosition(Position position)
+        public async Task<ActionResult<Position>> PostPosition(string name)
         {
-            _context.Positions.Add(position);
+            var _pos = new Position
+            {
+                Name = name,
+                Employees = new List<Employee>()
+
+            };
+            _context.Positions.Add(_pos);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetPosition", new { id = position.Id }, position);
+            return _pos;
         }
 
         // DELETE: api/Positions/5

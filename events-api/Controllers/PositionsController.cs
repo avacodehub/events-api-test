@@ -83,18 +83,22 @@ namespace events_api.Controllers
         // POST: api/Positions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Position>> PostPosition(string name)
+        public async Task<ActionResult<string>> PostPosition(SpecialityPostDTO specialityDTO)
         {
-            var _pos = new Position
-            {
-                Name = name,
-                Employees = new List<Employee>()
 
+var speciality = new Position
+            {
+                Name = specialityDTO.Name,
+                //QualificationId = qual.Id,
+               
             };
-            _context.Positions.Add(_pos);
+
+            _context.Positions.Add(speciality);
             await _context.SaveChangesAsync();
 
-            return _pos;
+            return speciality.Id.ToString(); 
+
+
         }
 
         // DELETE: api/Positions/5

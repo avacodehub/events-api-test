@@ -1,5 +1,4 @@
 using events_api.Data;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,6 +45,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseHttpsRedirection();
 
 // app.UseForwardedHeaders(new ForwardedHeadersOptions
 // {

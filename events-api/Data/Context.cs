@@ -42,7 +42,7 @@ namespace events_api.Data
         //}
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql("Host=localhost:5432;Database=eventsdb;Username=postgres;Password=admin");
+            => optionsBuilder.UseNpgsql("Host=localhost:5432;Database=eventsdb;Username=postgres;Password=postgres");
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

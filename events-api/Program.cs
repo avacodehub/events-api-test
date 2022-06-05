@@ -1,8 +1,16 @@
 using events_api.Data;
-using Microsoft.AspNetCore.HttpOverrides;
+// using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+var configurationBuilder = new ConfigurationBuilder()
+                            .SetBasePath(builder.Environment.ContentRootPath)
+                            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+                            .AddEnvironmentVariables();
+
+builder.Configuration.AddConfiguration(configurationBuilder.Build());
+
 
 var defaultConnectionString = string.Empty;
 
@@ -28,7 +36,8 @@ else
 }
 
 // Add services to the container.
-builder.Services.AddDbContext<Context>();
+builder.Services.AddDbContext<Context>(options =>
+   options.UseNpgsql(defaultConnectionString));
 
 var serviceProvider = builder.Services.BuildServiceProvider();
 try

@@ -5,16 +5,16 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["NETToDoDemo/NETToDoDemo.csproj", "NETToDoDemo/"]
-RUN dotnet restore "NETToDoDemo/NETToDoDemo.csproj"
+COPY ["events-api/events-api.csproj", "events-api/"]
+RUN dotnet restore "events-api/events-api.csproj"
 COPY . .
-WORKDIR "/src/NETToDoDemo"
-RUN dotnet build "NETToDoDemo.csproj" -c Release -o /app/build
+WORKDIR "/src/events-api"
+RUN dotnet build "events-api.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "NETToDoDemo.csproj" -c Release -o /app/publish
+RUN dotnet publish "events-api.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-CMD ASPNETCORE_URLS=http://*:$PORT dotnet NETToDoDemo.dll
+CMD ASPNETCORE_URLS=http://*:$PORT dotnet events-api.dll

@@ -5,6 +5,15 @@ using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var configurationBuilder = new ConfigurationBuilder()
+                            .SetBasePath(builder.Environment.ContentRootPath)
+                            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+                            .AddEnvironmentVariables();
+
+builder.Configuration.AddConfiguration(configurationBuilder.Build());
+
+
 var defaultConnectionString = string.Empty;
 
 if (builder.Environment.EnvironmentName == "Development")
@@ -29,7 +38,10 @@ else
 }
 
 // Add services to the container.
-builder.Services.AddDbContext<Context>();
+// builder.Services.AddDbContext<Context>();
+
+builder.Services.AddDbContext<Context>(options =>
+   options.UseNpgsql(defaultConnectionString));
 
 var serviceProvider = builder.Services.BuildServiceProvider();
 try
@@ -46,15 +58,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHttpsRedirection(options =>
-{
-    options.RedirectStatusCode = (int)HttpStatusCode.TemporaryRedirect;
-    options.HttpsPort = 5001;
-});
+// builder.Services.AddHttpsRedirection(options =>
+// {
+//     options.RedirectStatusCode = (int)HttpStatusCode.TemporaryRedirect;
+//     options.HttpsPort = 5001;
+// });
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 // app.UseForwardedHeaders(new ForwardedHeadersOptions
 // {
@@ -66,11 +78,11 @@ app.UseHttpsRedirection();
 //     app.UseHttpsRedirection();
 // }
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
-//}
+}
 
 // app.UseHttpsRedirection();
 

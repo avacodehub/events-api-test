@@ -1,18 +1,8 @@
 using events_api.Data;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
-
-var configurationBuilder = new ConfigurationBuilder()
-                            .SetBasePath(builder.Environment.ContentRootPath)
-                            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
-                            .AddEnvironmentVariables();
-
-builder.Configuration.AddConfiguration(configurationBuilder.Build());
-
 
 var defaultConnectionString = string.Empty;
 
@@ -38,10 +28,7 @@ else
 }
 
 // Add services to the container.
-// builder.Services.AddDbContext<Context>();
-
-builder.Services.AddDbContext<Context>(options =>
-   options.UseNpgsql(defaultConnectionString));
+builder.Services.AddDbContext<Context>();
 
 var serviceProvider = builder.Services.BuildServiceProvider();
 try
@@ -58,31 +45,23 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// builder.Services.AddHttpsRedirection(options =>
-// {
-//     options.RedirectStatusCode = (int)HttpStatusCode.TemporaryRedirect;
-//     options.HttpsPort = 5001;
-// });
-
 var app = builder.Build();
 
-// app.UseHttpsRedirection();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
-// app.UseForwardedHeaders(new ForwardedHeadersOptions
-// {
-//     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-// });
-
-// if (!app.Environment.IsDevelopment())
-// {
-//     app.UseHttpsRedirection();
-// }
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 // Configure the HTTP request pipeline.
-// if (app.Environment.IsDevelopment())
-// {
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
-// }
+}
 
 // app.UseHttpsRedirection();
 
